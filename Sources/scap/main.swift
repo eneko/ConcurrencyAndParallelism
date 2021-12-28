@@ -37,16 +37,26 @@ func pad(_ number: Int, zeroes: Int) -> String {
 }
 
 func progressStr() -> String {
-//    var total = 0
-//    let parts = groups.map { group -> String in
-//        let count = progress[group, default: 0]
-//        total += count
-//        let color = count > 0 ? colors[group, default: .default] : .default
-//        return "\(group):\(pad(count, zeroes: 2))".applyingColor(color)
-//    }
-////    let totalColor = total > 0 ? NamedColor.lightWhite : .lightBlack
-//    let totalStr = "|" + pad(total, zeroes: 3) + "|" + Array(repeating: "=", count: total).joined()
-//    return "[" + parts.joined(separator: ", ") + "] \(totalStr.lightBlack)"
+    var parts: [String] = []
+    var total = 0
+    for group in groups {
+        var groupTotal = 0
+        for item in 0..<operations {
+            let label = "\(group)\(pad(item, zeroes: 2))"
+            let active = progress[label, default: false]
+            if active {
+                groupTotal += 1
+            }
+        }
+        let color = groupTotal > 0 ? colors[group, default: .default] : .default
+        parts.append("\(group):\(pad(groupTotal, zeroes: 2))".applyingColor(color))
+        total += groupTotal
+    }
+    let totalStr = "|" + pad(total, zeroes: 3) + "|" + Array(repeating: "=", count: total).joined()
+    return "[" + parts.joined(separator: ", ") + "] \(totalStr.lightBlack)"
+}
+
+func progressStr2() -> String {
     var parts: [String] = []
     var total = 0
     for group in groups {
@@ -66,23 +76,22 @@ func progressStr() -> String {
 }
 
 func beginProcessing(group: String, itemIndex: Int) {
-    let color = colors[group, default: .default]
     let label = "\(group)\(pad(itemIndex, zeroes: 2))"
     lock.lock()
-//    progress[group] = progress[group, default: 0] + 1
     progress[label] = true
-//    log("<\(label.applyingColor(color)) \(progressStr())", newLine: true)
-    log(progressStr(), newLine: true)
+    let color = colors[group, default: .default]
+    log("<\(label.applyingColor(color)) \(progressStr())", newLine: true)
+//    log(progressStr2(), newLine: true)
     lock.unlock()
 }
 
 func endProcessing(group: String, itemIndex: Int) {
-//    let color = colors[group, default: .default]
     let label = "\(group)\(pad(itemIndex, zeroes: 2))"
     lock.lock()
-//    progress[group] = progress[group, default: 0] - 1
     progress[label] = false
-//    log("\(label.applyingColor(color))> \(progressStr())", newLine: true)
+    let color = colors[group, default: .default]
+    log("\(label.applyingColor(color))> \(progressStr())", newLine: true)
+//    log(progressStr2(), newLine: true)
     lock.unlock()
 }
 
